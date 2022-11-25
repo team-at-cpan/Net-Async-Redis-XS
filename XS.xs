@@ -3,6 +3,43 @@
 #include "perl.h"
 #include "XSUB.h"
 
+struct pending_stack {
+    int expected;
+    AV *data;
+    struct pending_stack *prev;
+};
+
+struct pending_stack *
+add_value(struct pending_stack *target, SV *v)
+{
+    warn("Add value, target was %p\n", target);
+    if(!target)
+        return target;
+
+    warn("Will push data onto %p where top index was %d", target->data, av_top_index(target->data));
+    av_push(
+        // *av_fetch(target->data, av_top_index(target->data), 1),
+        target->data,
+        v
+    );
+    warn("Count now %d from expected %d\n", av_count(target->data), target->expected);
+    while(target && av_count(target->data) >= target->expected) {
+        warn("Emit %d elements in array\n", av_count(target->data));
+        AV *data = target->data;
+        target = target->prev;
+        if(target) {
+            warn("Will push to %p the data from %p", target, data);
+            av_push(
+                target->data,
+                newRV(data)
+            );
+            warn("Have pushed our new RV");
+        }
+    }
+
+    return target;
+}
+
 MODULE = Net::Async::Redis::XS  PACKAGE = Net::Async::Redis::XS
 
 PROTOTYPES: DISABLE
@@ -15,10 +52,10 @@ CODE:
     const char *in = SvPVbyte_nolen(p);
     /* const char *in = "*1\x0D\x0A*1\x0D\x0A*2\x0D\x0A:8\x0D\x0A*6\x0D\x0A+a\x0D\x0A+1\x0D\x0A+b\x0D\x0A+2\x0D\x0A+c\x0D\x0A+3\x0D\x0A"; */
     const char *ptr = in;
+    struct pending_stack *ps = NULL;
     while(*ptr) {
-        switch(ptr[0]) {
+        switch(*ptr++) {
             case '*': { /* array */
-                ++ptr;
                 int n = 0;
                 while(*ptr >= '0' && *ptr <= '9') {
                     n = (n * 10) + (*ptr - '0');
@@ -28,11 +65,21 @@ CODE:
                     croak("protocol violation");
                 }
                 ptr += 2;
-                printf("Have array with %d elements\n", n);
+                warn("Have array with %d elements\n", n);
+                AV *x = newAV();
+                av_extend(x, n);
+                warn("Create new pending stack, previous %p\n", ps);
+                struct pending_stack *pn = Newx(pn, 1, struct pending_stack);
+                pn->expected = n;
+                pn->data = x;
+                pn->prev = ps;
+                if(ps == NULL) {
+                    RETVAL = newRV_inc(x);
+                }
+                ps = pn;
                 break;
             }
             case ':': { /* integer */
-                ++ptr;
                 int n = 0;
                 while(*ptr >= '0' && *ptr <= '9') {
                     n = (n * 10) + (*ptr - '0');
@@ -42,29 +89,38 @@ CODE:
                     croak("protocol violation\n");
                 }
                 ptr += 2;
-                printf("Have integer %d\n", n);
-                RETVAL = newSViv(n);
-                return;
+                warn("Have integer %d\n", n);
+                SV *v = newSViv(n);
+                if(ps) {
+                    ps = add_value(ps, v);
+                } else {
+                    RETVAL = v;
+                }
+                break;
             }
             case '+': { /* string */
-                ++ptr;
                 const char *start = ptr;
                 while(*ptr && (ptr[0] != '\x0D' && ptr[1] != '\x0A')) {
                     ++ptr;
                 }
                 int n = ptr - start;
-                char *str = malloc(n + 1);
+                char *str = Newx(str, n + 1, char);
                 strncpy(str, start, n);
                 str[n] = '\0';
                 ptr += 2;
-                printf("Have string %s\n", str);
+                warn("Have string %s\n", str);
+                SV *v = newSVpvn(str, n);
+                if(ps) {
+                    ps = add_value(ps, v);
+                } else {
+                    RETVAL = v;
+                }
                 break;
             }
             default:
-                printf("Unknown type %c, bail out\n", ptr[0]);
-                abort();
+                croak("Unknown type %c, bail out", ptr[0]);
         }
     }
-    RETVAL = newSV(0);
+    /* RETVAL = newSV(0); */
 OUTPUT:
     RETVAL
