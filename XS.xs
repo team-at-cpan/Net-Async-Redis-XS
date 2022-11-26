@@ -52,7 +52,6 @@ CODE:
     if(SvTYPE(p) != SVt_PV)
         croak("expected a string");
     const char *in = SvPVbyte_nolen(p);
-    /* const char *in = "*1\x0D\x0A*1\x0D\x0A*2\x0D\x0A:8\x0D\x0A*6\x0D\x0A+a\x0D\x0A+1\x0D\x0A+b\x0D\x0A+2\x0D\x0A+c\x0D\x0A+3\x0D\x0A"; */
     const char *ptr = in;
     struct pending_stack *ps = NULL;
     while(*ptr) {
