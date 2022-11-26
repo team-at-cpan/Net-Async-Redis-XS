@@ -164,7 +164,7 @@ CODE:
                 break;
             }
             default:
-                croak("Unknown type %c, bail out", ptr[0]);
+                croak("Unknown type %d, bail out", ptr[-1]);
         }
     }
     /* RETVAL = newSV(0); */
