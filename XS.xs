@@ -99,6 +99,37 @@ CODE:
                 }
                 break;
             }
+            case '$': { /* bulk string */
+                int n = 0;
+                SV *v;
+                if(ptr[0] == '-' && ptr[1] == '1') {
+                    // null
+                    ptr += 2;
+                    v = &PL_sv_undef;
+                } else {
+                    while(*ptr >= '0' && *ptr <= '9') {
+                        n = (n * 10) + (*ptr - '0');
+                        ++ptr;
+                    }
+                    if(ptr[0] != '\x0D' || ptr[1] != '\x0A') {
+                        croak("protocol violation");
+                    }
+                    ptr += 2;
+                    // warn("Have bulk string with %d characters\n", n);
+                    v = newSVpvn(ptr, n);
+                    ptr += n;
+                }
+                if(ptr[0] != '\x0D' || ptr[1] != '\x0A') {
+                    croak("protocol violation");
+                }
+                ptr += 2;
+                if(ps) {
+                    ps = add_value(ps, v);
+                } else {
+                    RETVAL = v;
+                }
+                break;
+            }
             case '+': { /* string */
                 const char *start = ptr;
                 while(*ptr && (ptr[0] != '\x0D' && ptr[1] != '\x0A')) {
@@ -111,6 +142,20 @@ CODE:
                 ptr += 2;
                 warn("Have string %s\n", str);
                 SV *v = newSVpvn(str, n);
+                if(ps) {
+                    ps = add_value(ps, v);
+                } else {
+                    RETVAL = v;
+                }
+                break;
+            }
+            case '_': { /* single-character null */
+                int n = 0;
+                SV *v = &PL_sv_undef;
+                if(ptr[0] != '\x0D' || ptr[1] != '\x0A') {
+                    croak("protocol violation");
+                }
+                ptr += 2;
                 if(ps) {
                     ps = add_value(ps, v);
                 } else {
