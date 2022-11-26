@@ -26,7 +26,9 @@ add_value(struct pending_stack *target, SV *v)
     while(target && av_count(target->data) >= target->expected) {
         warn("Emit %d elements in array\n", av_count(target->data));
         AV *data = target->data;
-        target = target->prev;
+        struct pending_stack *orig = target;
+        target = orig->prev;
+        Safefree(orig);
         if(target) {
             warn("Will push to %p the data from %p", target, data);
             av_push(
