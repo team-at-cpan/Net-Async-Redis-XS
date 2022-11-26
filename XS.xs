@@ -12,30 +12,30 @@ struct pending_stack {
 struct pending_stack *
 add_value(struct pending_stack *target, SV *v)
 {
-    warn("Add value, target was %p\n", target);
+    // warn("Add value, target was %p\n", target);
     if(!target)
         return target;
 
-    warn("Will push data onto %p where top index was %d", target->data, av_top_index(target->data));
+    // warn("Will push data onto %p where top index was %d", target->data, av_top_index(target->data));
     av_push(
         // *av_fetch(target->data, av_top_index(target->data), 1),
         target->data,
         v
     );
-    warn("Count now %d from expected %d\n", av_count(target->data), target->expected);
+    // warn("Count now %d from expected %d\n", av_count(target->data), target->expected);
     while(target && av_count(target->data) >= target->expected) {
-        warn("Emit %d elements in array\n", av_count(target->data));
+        // warn("Emit %d elements in array\n", av_count(target->data));
         AV *data = target->data;
         struct pending_stack *orig = target;
         target = orig->prev;
         Safefree(orig);
         if(target) {
-            warn("Will push to %p the data from %p", target, data);
+            // warn("Will push to %p the data from %p", target, data);
             av_push(
                 target->data,
                 newRV(data)
             );
-            warn("Have pushed our new RV");
+            // warn("Have pushed our new RV");
         }
     }
 
@@ -66,10 +66,10 @@ CODE:
                     croak("protocol violation");
                 }
                 ptr += 2;
-                warn("Have array with %d elements\n", n);
+                // warn("Have array with %d elements\n", n);
                 AV *x = newAV();
                 av_extend(x, n);
-                warn("Create new pending stack, previous %p\n", ps);
+                // warn("Create new pending stack, previous %p\n", ps);
                 struct pending_stack *pn = Newx(pn, 1, struct pending_stack);
                 pn->expected = n;
                 pn->data = x;
@@ -90,7 +90,7 @@ CODE:
                     croak("protocol violation\n");
                 }
                 ptr += 2;
-                warn("Have integer %d\n", n);
+                // warn("Have integer %d\n", n);
                 SV *v = newSViv(n);
                 if(ps) {
                     ps = add_value(ps, v);
@@ -140,7 +140,7 @@ CODE:
                 strncpy(str, start, n);
                 str[n] = '\0';
                 ptr += 2;
-                warn("Have string %s\n", str);
+                // warn("Have string %s\n", str);
                 SV *v = newSVpvn(str, n);
                 if(ps) {
                     ps = add_value(ps, v);
