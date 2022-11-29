@@ -184,6 +184,21 @@ CODE:
                 }
                 break;
             }
+            case '-': { /* error */
+                const char *start = ptr;
+                while(*ptr && (ptr[0] != '\x0D' && ptr[1] != '\x0A' && ptr < end)) {
+                    ++ptr;
+                }
+                int n = ptr - start;
+                char *str = Newx(str, n + 1, char);
+                strncpy(str, start, n);
+                str[n] = '\0';
+                ptr += 2;
+                // warn("Have string %s\n", str);
+                SV *v = newSVpvn(str, n);
+                /* Ignore for now - need to call $self->{error}->($err) */
+                break;
+            }
             case '_': { /* single-character null */
                 int n = 0;
                 SV *v = &PL_sv_undef;
