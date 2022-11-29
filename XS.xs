@@ -33,7 +33,7 @@ add_value(struct pending_stack *target, SV *v)
             // warn("Will push to %p the data from %p", target, data);
             av_push(
                 target->data,
-                newRV(data)
+                newRV((SV *) data)
             );
             // warn("Have pushed our new RV");
         }
@@ -81,7 +81,7 @@ CODE:
                 pn->data = x;
                 pn->prev = ps;
                 if(ps == NULL) {
-                    RETVAL = newRV_inc(x);
+                    RETVAL = newRV_inc((SV *) x);
                 }
                 ps = pn;
                 break;
