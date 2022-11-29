@@ -47,7 +47,7 @@ MODULE = Net::Async::Redis::XS  PACKAGE = Net::Async::Redis::XS
 PROTOTYPES: DISABLE
 
 SV *
-decode(SV *p)
+decode_buffer(SV *p)
 CODE:
     /* Plain bytestring required: no magic, no UTF-8, no nonsense */
     if(SvTYPE(p) != SVt_PV)
