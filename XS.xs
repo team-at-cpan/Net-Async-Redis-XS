@@ -46,9 +46,9 @@ MODULE = Net::Async::Redis::XS  PACKAGE = Net::Async::Redis::XS
 
 PROTOTYPES: DISABLE
 
-SV *
+AV *
 decode_buffer(SV *p)
-CODE:
+PPCODE:
     /* Plain bytestring required: no magic, no UTF-8, no nonsense */
     if(SvTYPE(p) != SVt_PV)
         croak("expected a string");
@@ -60,6 +60,7 @@ CODE:
     const char *ptr = in;
     const char *end = in + len - 1;
     struct pending_stack *ps = NULL;
+    AV *results = newAV();
     while(*ptr && ptr < end) {
         switch(*ptr++) {
             case '*': { /* array */
@@ -81,7 +82,7 @@ CODE:
                 pn->data = x;
                 pn->prev = ps;
                 if(ps == NULL) {
-                    RETVAL = newRV_inc((SV *) x);
+                    av_push(results, newRV_inc((SV *) x));
                 }
                 ps = pn;
                 break;
@@ -107,7 +108,7 @@ CODE:
                 pn->data = x;
                 pn->prev = ps;
                 if(ps == NULL) {
-                    RETVAL = newRV_inc((SV *) x);
+                    av_push(results, newRV_inc((SV *) x));
                 }
                 ps = pn;
                 break;
@@ -127,7 +128,7 @@ CODE:
                 if(ps) {
                     ps = add_value(ps, v);
                 } else {
-                    RETVAL = v;
+                    av_push(results, v);
                 }
                 break;
             }
@@ -161,7 +162,7 @@ CODE:
                 if(ps) {
                     ps = add_value(ps, v);
                 } else {
-                    RETVAL = v;
+                    av_push(results, v);
                 }
                 break;
             }
@@ -180,7 +181,7 @@ CODE:
                 if(ps) {
                     ps = add_value(ps, v);
                 } else {
-                    RETVAL = v;
+                    av_push(results, v);
                 }
                 break;
             }
@@ -209,7 +210,7 @@ CODE:
                 if(ps) {
                     ps = add_value(ps, v);
                 } else {
-                    RETVAL = v;
+                    av_push(results, v);
                 }
                 break;
             }
@@ -221,6 +222,16 @@ CODE:
     if((ptr - in) > 0) {
         sv_chop(p, ptr);
     }
-    /* RETVAL = newSV(0); */
-OUTPUT:
-    RETVAL
+    /* Flatten our results back into scalars for return */
+    if (GIMME_V == G_ARRAY) {
+        EXTEND(SP, av_count(results));
+        for(int i = 0; i < av_count(results); ++i) {
+            mPUSHs(*av_fetch(results, i, 1));
+        }
+    } else if (GIMME_V == G_SCALAR) {
+        if(av_count(results) > 0) {
+            mXPUSHs(*av_fetch(results, 0, 1));
+        } else {
+            mXPUSHs(&PL_sv_undef);
+        }
+    }
