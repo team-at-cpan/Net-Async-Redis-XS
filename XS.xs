@@ -170,6 +170,10 @@ CODE:
                 croak("Unknown type %d, bail out", ptr[-1]);
         }
     }
+    /* Remove anything we processed */
+    if((ptr - in) > 0) {
+        sv_chop(p, ptr);
+    }
     /* RETVAL = newSV(0); */
 OUTPUT:
     RETVAL
