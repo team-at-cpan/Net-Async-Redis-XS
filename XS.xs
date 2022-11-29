@@ -86,6 +86,32 @@ CODE:
                 ps = pn;
                 break;
             }
+            case '%': { /* hash */
+                int n = 0;
+                while(*ptr >= '0' && *ptr <= '9' && ptr < end) {
+                    n = (n * 10) + (*ptr - '0');
+                    ++ptr;
+                }
+                /* Hash of key/value pairs */
+                n = n * 2;
+                if(ptr[0] != '\x0D' || ptr[1] != '\x0A') {
+                    croak("protocol violation");
+                }
+                ptr += 2;
+                // warn("Have array with %d elements\n", n);
+                AV *x = newAV();
+                av_extend(x, n);
+                // warn("Create new pending stack, previous %p\n", ps);
+                struct pending_stack *pn = Newx(pn, 1, struct pending_stack);
+                pn->expected = n;
+                pn->data = x;
+                pn->prev = ps;
+                if(ps == NULL) {
+                    RETVAL = newRV_inc((SV *) x);
+                }
+                ps = pn;
+                break;
+            }
             case ':': { /* integer */
                 int n = 0;
                 while(*ptr >= '0' && *ptr <= '9' && ptr < end) {
