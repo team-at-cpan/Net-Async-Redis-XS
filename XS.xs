@@ -49,9 +49,12 @@ PROTOTYPES: DISABLE
 SV *
 decode(SV *p)
 CODE:
+    /* Plain bytestring required: no magic, no UTF-8, no nonsense */
     if(SvTYPE(p) != SVt_PV)
         croak("expected a string");
     const char *in = SvPVbyte_nolen(p);
+    if(SvUTF8(p))
+        sv_utf8_downgrade(p, true);
     const char *ptr = in;
     struct pending_stack *ps = NULL;
     while(*ptr) {
