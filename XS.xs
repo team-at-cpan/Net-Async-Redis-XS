@@ -52,16 +52,19 @@ CODE:
     /* Plain bytestring required: no magic, no UTF-8, no nonsense */
     if(SvTYPE(p) != SVt_PV)
         croak("expected a string");
-    const char *in = SvPVbyte_nolen(p);
     if(SvUTF8(p))
         sv_utf8_downgrade(p, true);
+
+    STRLEN len;
+    const char *in = SvPVbyte(p, len);
     const char *ptr = in;
+    const char *end = in + len - 1;
     struct pending_stack *ps = NULL;
-    while(*ptr) {
+    while(*ptr && ptr < end) {
         switch(*ptr++) {
             case '*': { /* array */
                 int n = 0;
-                while(*ptr >= '0' && *ptr <= '9') {
+                while(*ptr >= '0' && *ptr <= '9' && ptr < end) {
                     n = (n * 10) + (*ptr - '0');
                     ++ptr;
                 }
@@ -85,7 +88,7 @@ CODE:
             }
             case ':': { /* integer */
                 int n = 0;
-                while(*ptr >= '0' && *ptr <= '9') {
+                while(*ptr >= '0' && *ptr <= '9' && ptr < end) {
                     n = (n * 10) + (*ptr - '0');
                     ++ptr;
                 }
@@ -110,9 +113,12 @@ CODE:
                     ptr += 2;
                     v = &PL_sv_undef;
                 } else {
-                    while(*ptr >= '0' && *ptr <= '9') {
+                    while(*ptr >= '0' && *ptr <= '9' && ptr < end) {
                         n = (n * 10) + (*ptr - '0');
                         ++ptr;
+                    }
+                    if(ptr + n >= end) {
+                        croak("incomplete packet");
                     }
                     if(ptr[0] != '\x0D' || ptr[1] != '\x0A') {
                         croak("protocol violation");
@@ -135,7 +141,7 @@ CODE:
             }
             case '+': { /* string */
                 const char *start = ptr;
-                while(*ptr && (ptr[0] != '\x0D' && ptr[1] != '\x0A')) {
+                while(*ptr && (ptr[0] != '\x0D' && ptr[1] != '\x0A' && ptr < end)) {
                     ++ptr;
                 }
                 int n = ptr - start;
