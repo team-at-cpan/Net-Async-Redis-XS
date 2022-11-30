@@ -64,7 +64,7 @@ PPCODE:
                         goto end_parsing;
                     }
                     if(ptr[0] != '\x0D' || ptr[1] != '\x0A') {
-                        croak("protocol violation");
+                        croak("protocol violation - array length not followed by CRLF");
                     }
                     ptr += 2;
                     AV *x = newAV();
@@ -92,7 +92,7 @@ PPCODE:
                     /* Hash of key/value pairs */
                     n = n * 2;
                     if(ptr[0] != '\x0D' || ptr[1] != '\x0A') {
-                        croak("protocol violation");
+                        croak("protocol violation - number of hash entries not followed by CRLF");
                     }
                     ptr += 2;
                     AV *x = newAV();
@@ -118,7 +118,7 @@ PPCODE:
                         goto end_parsing;
                     }
                     if(ptr[0] != '\x0D' || ptr[1] != '\x0A') {
-                        croak("protocol violation\n");
+                        croak("protocol violation - integer not followed by CRLF\n");
                     }
                     ptr += 2;
                     SV *v = newSViv(n);
@@ -146,19 +146,19 @@ PPCODE:
                             n = (n * 10) + (*ptr - '0');
                             ++ptr;
                         }
-                        if(ptr + n + 2 > end) {
+                        if(ptr + n + 4 > end) {
                             warn("Unable to parse bulk string, past the end");
                             goto end_parsing;
                         }
                         if(ptr[0] != '\x0D' || ptr[1] != '\x0A') {
-                            croak("protocol violation");
+                            croak("protocol violation - bulk string length not followed by CRLF");
                         }
                         ptr += 2;
                         v = newSVpvn(ptr, n);
                         ptr += n;
                     }
                     if(ptr[0] != '\x0D' || ptr[1] != '\x0A') {
-                        croak("protocol violation");
+                        croak("protocol violation - bulk string not terminated by CRLF");
                     }
                     ptr += 2;
                     if(ps) {
@@ -177,6 +177,9 @@ PPCODE:
                     if(ptr + 2 > end) {
                         warn("Unable to parse regular string, past the end");
                         goto end_parsing;
+                    }
+                    if(ptr[0] != '\x0D' || ptr[1] != '\x0A') {
+                        croak("protocol violation - string not terminated by CRLF");
                     }
                     int n = ptr - start;
                     char *str = Newx(str, n + 1, char);
@@ -197,9 +200,12 @@ PPCODE:
                     while(*ptr && (ptr[0] != '\x0D' && ptr[1] != '\x0A' && ptr < end)) {
                         ++ptr;
                     }
-                    if(ptr > end) {
+                    if(ptr + 2 > end) {
                         warn("Unable to parse error, past the end");
                         goto end_parsing;
+                    }
+                    if(ptr[0] != '\x0D' || ptr[1] != '\x0A') {
+                        croak("protocol violation - error not terminated by CRLF");
                     }
                     int n = ptr - start;
                     char *str = Newx(str, n + 1, char);
