@@ -13,9 +13,7 @@ package Net::Async::Redis::Protocol::XS {
 
     sub decode {
         my ($self, $bytes) = @_;
-        warn "decode buffer, size " . (length($$bytes)) . "\n";
-        my @data = Net::Async::Redis::XS::decode_buffer($$bytes);
-        warn "decoded buffer, size now " . (length($$bytes)) . "\n";
+        my @data = Net::Async::Redis::XS::decode_buffer($self, $$bytes);
         $self->item($_) for @data;
     }
 }
