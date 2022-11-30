@@ -59,7 +59,7 @@ PPCODE:
                         n = (n * 10) + (*ptr - '0');
                         ++ptr;
                     }
-                    if(ptr > end) {
+                    if(ptr + 2 > end) {
                         warn("Unable to parse array, past the end");
                         goto end_parsing;
                     }
@@ -85,7 +85,7 @@ PPCODE:
                         n = (n * 10) + (*ptr - '0');
                         ++ptr;
                     }
-                    if(ptr >= end) {
+                    if(ptr + 2 > end) {
                         warn("Unable to parse hash, past the end");
                         goto end_parsing;
                     }
@@ -113,7 +113,7 @@ PPCODE:
                         n = (n * 10) + (*ptr - '0');
                         ++ptr;
                     }
-                    if(ptr > end) {
+                    if(ptr + 2 > end) {
                         warn("Unable to parse integer, past the end");
                         goto end_parsing;
                     }
@@ -146,7 +146,7 @@ PPCODE:
                             n = (n * 10) + (*ptr - '0');
                             ++ptr;
                         }
-                        if(ptr + n > end) {
+                        if(ptr + n + 2 > end) {
                             warn("Unable to parse bulk string, past the end");
                             goto end_parsing;
                         }
@@ -174,7 +174,7 @@ PPCODE:
                     while(*ptr && (ptr[0] != '\x0D' && ptr[1] != '\x0A' && ptr < end)) {
                         ++ptr;
                     }
-                    if(ptr > end) {
+                    if(ptr + 2 > end) {
                         warn("Unable to parse regular string, past the end");
                         goto end_parsing;
                     }
