@@ -21,7 +21,7 @@ add_value(struct pending_stack *target, SV *v)
 
     av_push(
         target->data,
-        v
+        sv_2mortal(v)
     );
 }
 
@@ -339,6 +339,7 @@ PPCODE:
                         extracted_item = 1;
                         break;
                     }
+                    SvREFCNT_dec(data);
                 }
                 Safefree(orig);
             }
