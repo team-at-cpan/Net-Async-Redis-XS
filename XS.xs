@@ -13,37 +13,16 @@ struct pending_stack {
     enum PendingStackType type;
 };
 
-struct pending_stack *
+void
 add_value(struct pending_stack *target, SV *v)
 {
-    // warn("Add value, target was %p\n", target);
     if(!target)
-        return target;
+        return;
 
-    // warn("Will push data onto %p where top index was %d", target->data, av_top_index(target->data));
     av_push(
-        // *av_fetch(target->data, av_top_index(target->data), 1),
         target->data,
         v
     );
-    // warn("Count now %d from expected %d\n", av_count(target->data), target->expected);
-    while(target && av_count(target->data) >= target->expected) {
-        // warn("Emit %d elements in array\n", av_count(target->data));
-        AV *data = target->data;
-        struct pending_stack *orig = target;
-        target = orig->prev;
-        Safefree(orig);
-        if(target) {
-            // warn("Will push to %p the data from %p", target, data);
-            av_push(
-                target->data,
-                newRV((SV *) data)
-            );
-            // warn("Have pushed our new RV");
-        }
-    }
-
-    return target;
 }
 
 MODULE = Net::Async::Redis::XS  PACKAGE = Net::Async::Redis::XS
@@ -88,19 +67,15 @@ PPCODE:
                         croak("protocol violation");
                     }
                     ptr += 2;
-                    // warn("Have array with %d elements\n", n);
                     AV *x = newAV();
-                    av_extend(x, n);
-                    // warn("Create new pending stack, previous %p\n", ps);
+                    if(n > 0) {
+                        av_extend(x, n);
+                    }
                     struct pending_stack *pn = Newx(pn, 1, struct pending_stack);
                     pn->data = x;
                     pn->prev = ps;
                     pn->expected = n;
                     pn->type = array;
-                    if(ps == NULL) {
-                        av_push(results, newRV_inc((SV *) x));
-                        extracted_item = 1;
-                    }
                     ps = pn;
                     break;
                 }
@@ -120,19 +95,15 @@ PPCODE:
                         croak("protocol violation");
                     }
                     ptr += 2;
-                    // warn("Have array with %d elements\n", n);
                     AV *x = newAV();
-                    av_extend(x, n);
-                    // warn("Create new pending stack, previous %p\n", ps);
+                    if(n > 0) {
+                        av_extend(x, n);
+                    }
                     struct pending_stack *pn = Newx(pn, 1, struct pending_stack);
                     pn->data = x;
                     pn->prev = ps;
                     pn->expected = n;
                     pn->type = map;
-                    if(ps == NULL) {
-                        av_push(results, newRV_inc((SV *) x));
-                        extracted_item = 1;
-                    }
                     ps = pn;
                     break;
                 }
@@ -150,10 +121,9 @@ PPCODE:
                         croak("protocol violation\n");
                     }
                     ptr += 2;
-                    // warn("Have integer %d\n", n);
                     SV *v = newSViv(n);
                     if(ps) {
-                        ps = add_value(ps, v);
+                        add_value(ps, v);
                     } else {
                         av_push(results, v);
                         extracted_item = 1;
@@ -184,7 +154,6 @@ PPCODE:
                             croak("protocol violation");
                         }
                         ptr += 2;
-                        // warn("Have bulk string with %d characters\n", n);
                         v = newSVpvn(ptr, n);
                         ptr += n;
                     }
@@ -193,7 +162,7 @@ PPCODE:
                     }
                     ptr += 2;
                     if(ps) {
-                        ps = add_value(ps, v);
+                        add_value(ps, v);
                     } else {
                         av_push(results, v);
                         extracted_item = 1;
@@ -214,10 +183,9 @@ PPCODE:
                     strncpy(str, start, n);
                     str[n] = '\0';
                     ptr += 2;
-                    // warn("Have string %s\n", str);
                     SV *v = newSVpvn(str, n);
                     if(ps) {
-                        ps = add_value(ps, v);
+                        add_value(ps, v);
                     } else {
                         av_push(results, v);
                         extracted_item = 1;
@@ -238,7 +206,6 @@ PPCODE:
                     strncpy(str, start, n);
                     str[n] = '\0';
                     ptr += 2;
-                    // warn("Have string %s\n", str);
                     SV *v = newSVpvn(str, n);
                     SV *rv = SvRV(this);
 
@@ -283,7 +250,7 @@ PPCODE:
                     }
                     ptr += 2;
                     if(ps) {
-                        ps = add_value(ps, v);
+                        add_value(ps, v);
                     } else {
                         av_push(results, v);
                         extracted_item = 1;
@@ -292,6 +259,24 @@ PPCODE:
                 }
                 default:
                     croak("Unknown type %d, bail out", ptr[-1]);
+            }
+            while(ps && av_count(ps->data) >= ps->expected) {
+                AV *data = ps->data;
+                struct pending_stack *orig = ps;
+                ps = orig->prev;
+                Safefree(orig);
+                if(ps) {
+                    av_push(
+                        ps->data,
+                        newRV((SV *) data)
+                   );
+                } else {
+                    av_push(
+                        results,
+                        newRV((SV *) data)
+                    );
+                    extracted_item = 1;
+                }
             }
             if(extracted_item) {
                 /* Remove anything we processed */
