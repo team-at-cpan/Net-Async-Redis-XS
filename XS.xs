@@ -79,6 +79,32 @@ PPCODE:
                     ps = pn;
                     break;
                 }
+                case '>': { /* push (pubsub) */
+                    int n = 0;
+                    while(*ptr >= '0' && *ptr <= '9' && ptr < end) {
+                        n = (n * 10) + (*ptr - '0');
+                        ++ptr;
+                    }
+                    if(ptr + 2 > end) {
+                        warn("Unable to parse push, past the end");
+                        goto end_parsing;
+                    }
+                    if(ptr[0] != '\x0D' || ptr[1] != '\x0A') {
+                        croak("protocol violation - push length not followed by CRLF");
+                    }
+                    ptr += 2;
+                    AV *x = newAV();
+                    if(n > 0) {
+                        av_extend(x, n);
+                    }
+                    struct pending_stack *pn = Newx(pn, 1, struct pending_stack);
+                    pn->data = x;
+                    pn->prev = ps;
+                    pn->expected = n;
+                    pn->type = push;
+                    ps = pn;
+                    break;
+                }
                 case '%': { /* hash */
                     int n = 0;
                     while(*ptr >= '0' && *ptr <= '9' && ptr < end) {
@@ -270,19 +296,51 @@ PPCODE:
                 AV *data = ps->data;
                 struct pending_stack *orig = ps;
                 ps = orig->prev;
-                Safefree(orig);
+                SV *value_ref = newRV((SV *) data);
                 if(ps) {
                     av_push(
                         ps->data,
-                        newRV((SV *) data)
+                        value_ref
                    );
                 } else {
-                    av_push(
-                        results,
-                        newRV((SV *) data)
-                    );
-                    extracted_item = 1;
+                    switch(orig->type) {
+                    case push: {
+                        SV *rv = SvRV(this);
+                        if(hv_exists((HV *) rv, "pubsub", 5)) {
+                            SV **cv_ptr = hv_fetchs((HV *) rv, "pubsub", 0);
+                            if(cv_ptr) {
+                                CV *cv = (CV *) *cv_ptr;
+                                dSP;
+                                ENTER;
+                                SAVETMPS;
+                                PUSHMARK(SP);
+                                EXTEND(SP, 1);
+                                PUSHs(sv_2mortal(value_ref));
+                                PUTBACK;
+                                call_sv((SV *) cv, G_VOID | G_DISCARD);
+                                FREETMPS;
+                                LEAVE;
+                            } else {
+                                warn("no CV for ->{pubsub}");
+                            }
+                        } else {
+                            warn("no ->{pubsub} handler");
+                        }
+                        break;
+                    }
+                    case attribute:
+                        warn("attribute received, but ignored");
+                        break;
+                    default:
+                        av_push(
+                            results,
+                            value_ref
+                        );
+                        extracted_item = 1;
+                        break;
+                    }
                 }
+                Safefree(orig);
             }
             if(extracted_item) {
                 /* Remove anything we processed */

@@ -46,5 +46,7 @@ is_deeply(
     'can decode_buffer'
 );
 
+is_deeply([ Net::Async::Redis::XS::decode_buffer($instance, ">1$Z:8$Z") ], [ ], 'can decode_buffer for pubsub with no data');
+
 done_testing;
 
