@@ -349,7 +349,7 @@ PPCODE:
                 end = ptr + len;
                 extracted_item = 0;
                 if (GIMME_V == G_SCALAR) {
-                    extracted = *av_fetch(results, 0, 1);
+                    extracted = av_shift(results);
                     break;
                 }
             }
@@ -358,18 +358,14 @@ PPCODE:
 end_parsing:
     /* Flatten our results back into scalars for return */
     long count = av_count(results);
-    if (GIMME_V == G_ARRAY) {
+    if (GIMME_V == G_LIST) {
         if(count) {
             EXTEND(SP, count);
             for(int i = 0; i < count; ++i) {
-                mPUSHs(*av_fetch(results, i, 1));
+                mPUSHs(av_shift(results));
             }
         }
     } else if (GIMME_V == G_SCALAR) {
-        if(count > 0) {
-            mXPUSHs(*av_fetch(results, 0, 1));
-        } else {
-            mXPUSHs(&PL_sv_undef);
-        }
+        mXPUSHs(extracted);
     }
-    // av_clear(results);
+    SvREFCNT_dec(results);
