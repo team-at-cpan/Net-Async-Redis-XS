@@ -7,6 +7,8 @@ use Test::More 0.88;
 use Test::EOL;
 
 my @files = (
+    'lib/Net/Async/Redis/Cluster/Node/XS.pm',
+    'lib/Net/Async/Redis/Cluster/XS.pm',
     'lib/Net/Async/Redis/XS.pm',
     't/00-check-deps.t',
     't/00-compile.t',
