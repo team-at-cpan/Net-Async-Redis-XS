@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+    [New features]
+    - cluster support
 
 0.002     2022-12-01 11:48:43+08:00 Asia/Singapore
     [Minor updates]

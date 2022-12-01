@@ -4,7 +4,7 @@ package Net::Async::Redis::XS;
 use strict;
 use warnings;
 
-our $VERSION = '0.002';
+our $VERSION = '0.003';
 
 use parent qw(Net::Async::Redis);
 
