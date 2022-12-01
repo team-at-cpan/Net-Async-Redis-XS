@@ -17,8 +17,14 @@ like(exception {
 
 our $Z = "\x0D\x0A";
 is(Net::Async::Redis::XS::decode_buffer($instance, ":3$Z"), 3, 'can decode_buffer');
+is(Net::Async::Redis::XS::decode_buffer($instance, ":-2$Z"), -2, 'can decode_buffer');
 is(Net::Async::Redis::XS::decode_buffer($instance, ":0$Z"), 0, 'can decode_buffer');
 isnt(Net::Async::Redis::XS::decode_buffer($instance, ":23$Z"), 22, 'can decode_buffer');
+is(Net::Async::Redis::XS::decode_buffer($instance, ",1$Z"), 1, 'floating point');
+is(Net::Async::Redis::XS::decode_buffer($instance, ",1.0$Z"), 1.0, 'floating point');
+is(Net::Async::Redis::XS::decode_buffer($instance, ",1.00$Z"), 1.00, 'floating point');
+cmp_ok(abs(Net::Async::Redis::XS::decode_buffer($instance, ",1.00384$Z") - 1.00384), '<=', 0.0001, 'floating point');
+cmp_ok(abs(Net::Async::Redis::XS::decode_buffer($instance, ",-3.14156926535898$Z") - -3.14156926535898), '<=', 0.000001, 'floating point');
 is(Net::Async::Redis::XS::decode_buffer($instance, "+example$Z"), 'example', 'can decode_buffer');
 is(Net::Async::Redis::XS::decode_buffer($instance, "-error$Z"), undef, 'can decode_buffer');
 is_deeply(Net::Async::Redis::XS::decode_buffer($instance, "*1$Z+test$Z"), ['test'], 'can decode_buffer');
