@@ -21,7 +21,7 @@ add_value(struct pending_stack *target, SV *v)
 
     av_push(
         target->data,
-        sv_2mortal(v)
+        v
     );
 }
 
@@ -43,7 +43,7 @@ PPCODE:
     const char *ptr = in;
     const char *end = in + len;
     struct pending_stack *ps = NULL;
-    AV *results = newAV();
+    AV *results = (AV *) sv_2mortal((SV *) newAV());
     int extracted_item = 0;
     SV *extracted = &PL_sv_undef;
     /* Shortcut for "we have incomplete data" */
@@ -67,7 +67,7 @@ PPCODE:
                         croak("protocol violation - array length not followed by CRLF");
                     }
                     ptr += 2;
-                    AV *x = newAV();
+                    AV *x = (AV *) sv_2mortal((SV *)newAV());
                     if(n > 0) {
                         av_extend(x, n);
                     }
@@ -93,7 +93,7 @@ PPCODE:
                         croak("protocol violation - push length not followed by CRLF");
                     }
                     ptr += 2;
-                    AV *x = newAV();
+                    AV *x = (AV *) sv_2mortal((SV *)newAV());
                     if(n > 0) {
                         av_extend(x, n);
                     }
@@ -121,7 +121,7 @@ PPCODE:
                         croak("protocol violation - number of hash entries not followed by CRLF");
                     }
                     ptr += 2;
-                    AV *x = newAV();
+                    AV *x = (AV *) sv_2mortal((SV *)newAV());
                     if(n > 0) {
                         av_extend(x, n);
                     }
@@ -292,6 +292,7 @@ PPCODE:
                 default:
                     croak("Unknown type %d, bail out", ptr[-1]);
             }
+
             while(ps && av_count(ps->data) >= ps->expected) {
                 AV *data = ps->data;
                 struct pending_stack *orig = ps;
@@ -339,7 +340,6 @@ PPCODE:
                         extracted_item = 1;
                         break;
                     }
-                    SvREFCNT_dec(data);
                 }
                 Safefree(orig);
             }
@@ -357,9 +357,16 @@ PPCODE:
         }
     }
 end_parsing:
+    /* Clean up our temporary parse stack */
+    while(ps) {
+        struct pending_stack *orig = ps;
+        ps = ps->prev;
+        Safefree(orig);
+    }
+
     /* Flatten our results back into scalars for return */
-    long count = av_count(results);
     if (GIMME_V == G_LIST) {
+        long count = av_count(results);
         if(count) {
             EXTEND(SP, count);
             for(int i = 0; i < count; ++i) {
@@ -369,4 +376,3 @@ end_parsing:
     } else if (GIMME_V == G_SCALAR) {
         mXPUSHs(extracted);
     }
-    SvREFCNT_dec(results);
