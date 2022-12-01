@@ -30,7 +30,7 @@ no_growth {
     my $src = "*1$Z*1$Z*2$Z:8$Z*6$Z+a$Z:83894$Z+b$Z+2$Z+c$Z+3$Z";
     for(0..length($src)) {
         my $data = substr($src, 0, $_);
-        my @x = Net::Async::Redis::XS::decode_buffer($instance, 
+        my @x = Net::Async::Redis::XS::decode_buffer($instance,
             $data
         );
     }

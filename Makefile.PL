@@ -7,7 +7,7 @@ use warnings;
 use ExtUtils::MakeMaker;
 
 my %WriteMakefileArgs = (
-  "ABSTRACT" => "faster",
+  "ABSTRACT" => "faster version of Net::Async::Redis",
   "AUTHOR" => "Tom Molesworth <TEAM\@cpan.org>",
   "CONFIGURE_REQUIRES" => {
     "ExtUtils::MakeMaker" => 0

@@ -32,7 +32,7 @@ is_deeply([ Net::Async::Redis::XS::decode_buffer($instance, ":18$Z") ], [ 18 ], 
     is($err, 'error');
 }
 is_deeply(
-    Net::Async::Redis::XS::decode_buffer($instance, 
+    Net::Async::Redis::XS::decode_buffer($instance,
         "*1$Z*1$Z*2$Z:8$Z*6$Z+a$Z+1$Z+b$Z+2$Z+c$Z+3$Z"
     ), [
         [
