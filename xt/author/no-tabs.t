@@ -15,7 +15,6 @@ my @files = (
     't/00-report-prereqs.dd',
     't/00-report-prereqs.t',
     't/decode.t',
-    't/memory.t',
     'xt/author/distmeta.t',
     'xt/author/eol.t',
     'xt/author/minimum-version.t',
@@ -24,6 +23,7 @@ my @files = (
     'xt/author/pod-syntax.t',
     'xt/author/portability.t',
     'xt/author/test-version.t',
+    'xt/memory.t',
     'xt/release/common_spelling.t',
     'xt/release/cpan-changes.t'
 );

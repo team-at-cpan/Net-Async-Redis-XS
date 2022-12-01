@@ -2,6 +2,7 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
+#include <math.h>
 
 enum PendingStackType {
     array, map, set, attribute, push
@@ -133,9 +134,17 @@ PPCODE:
                 }
                 case ':': { /* integer */
                     int n = 0;
+                    int negative = 0;
+                    if(*ptr == '-') {
+                        negative = 1;
+                        ++ptr;
+                    }
                     while(*ptr >= '0' && *ptr <= '9' && ptr < end) {
                         n = (n * 10) + (*ptr - '0');
                         ++ptr;
+                    }
+                    if(negative) {
+                        n = -n;
                     }
                     if(ptr + 2 > end) {
                         goto end_parsing;
@@ -145,6 +154,48 @@ PPCODE:
                     }
                     ptr += 2;
                     SV *v = newSViv(n);
+                    if(ps) {
+                        add_value(ps, v);
+                    } else {
+                        av_push(results, v);
+                        extracted_item = 1;
+                    }
+                    break;
+                }
+                case ',': { /* decimal floating-point */
+                    float n = 0;
+                    int negative = 0;
+                    if(*ptr == '-') {
+                        negative = 1;
+                        ++ptr;
+                    }
+                    int fraction = 0;
+                    int digits = 0;
+                    while((*ptr == '.' || (*ptr >= '0' && *ptr <= '9')) && ptr < end) {
+                        if(*ptr == '.') {
+                            fraction = 1;
+                        } else {
+                            n = (n * 10) + (*ptr - '0');
+                            if(fraction) {
+                                ++digits;
+                            }
+                        }
+                        ++ptr;
+                    }
+                    if(digits > 0) {
+                        n = n / pow(10, digits);
+                    }
+                    if(negative) {
+                        n = -n;
+                    }
+                    if(ptr + 2 > end) {
+                        goto end_parsing;
+                    }
+                    if(ptr[0] != '\x0D' || ptr[1] != '\x0A') {
+                        croak("protocol violation - decimal numebr not followed by CRLF\n");
+                    }
+                    ptr += 2;
+                    SV *v = newSVnv(n);
                     if(ps) {
                         add_value(ps, v);
                     } else {
