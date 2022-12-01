@@ -41,7 +41,7 @@ is_deeply(
                     'a', '1', 'b', '2', 'c', '3'
                 ]
             ]
-        ]   
+        ]
     ],
     'can decode_buffer'
 );
