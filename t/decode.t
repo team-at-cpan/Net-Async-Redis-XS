@@ -25,11 +25,14 @@ is_deeply(Net::Async::Redis::XS::decode_buffer($instance, "*1$Z+test$Z"), ['test
 is_deeply(Net::Async::Redis::XS::decode_buffer($instance, "*1$Z*1$Z+test$Z"), [['test']], 'can decode_buffer');
 
 is_deeply([ Net::Async::Redis::XS::decode_buffer($instance, ":18$Z") ], [ 18 ], 'integer should yield one item');
+is_deeply([ Net::Async::Redis::XS::decode_buffer($instance, "*0$Z") ], [ [ ] ], 'empty array');
+is_deeply([ Net::Async::Redis::XS::decode_buffer($instance, "*1$Z*0$Z") ], [ [ [] ] ], 'empty array inside another array');
+is_deeply([ Net::Async::Redis::XS::decode_buffer($instance, "*1$Z*1$Z*0$Z") ], [ [ [ [] ] ] ], 'empty array inside two arrays');
 {
     my $err;
     local $instance->{error} = sub { fail('called more than once') if $err; $err = shift; };
     is_deeply([ Net::Async::Redis::XS::decode_buffer($instance, "-error$Z") ], [ ], 'error should yield no items');
-    is($err, 'error');
+    is($err, 'error', 'callback received error message');
 }
 is_deeply(
     Net::Async::Redis::XS::decode_buffer($instance,
@@ -48,5 +51,15 @@ is_deeply(
 
 is_deeply([ Net::Async::Redis::XS::decode_buffer($instance, ">1$Z:8$Z") ], [ ], 'can decode_buffer for pubsub with no data');
 
+is_deeply(
+    Net::Async::Redis::XS::decode_buffer($instance,
+        "*1$Z*1$Z*1$Z%0$Z"
+    ), [
+        [
+            [ [ ] ]
+        ]
+    ],
+    'can decode_buffer'
+);
 done_testing;
 
