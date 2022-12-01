@@ -209,11 +209,8 @@ PPCODE:
                         croak("protocol violation - string not terminated by CRLF");
                     }
                     int n = ptr - start;
-                    char *str = Newx(str, n + 1, char);
-                    strncpy(str, start, n);
-                    str[n] = '\0';
+                    SV *v = newSVpvn(start, n);
                     ptr += 2;
-                    SV *v = newSVpvn(str, n);
                     if(ps) {
                         add_value(ps, v);
                     } else {
