@@ -1,6 +1,9 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+    [Minor updates]
+    - removed warnings for partial data processing - these are common when dealing with large
+    packets, and we don't need to alert the user about this
 
 0.001     2022-12-01 11:32:47+08:00 Asia/Singapore
     Initial version.
