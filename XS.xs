@@ -61,7 +61,6 @@ PPCODE:
                         ++ptr;
                     }
                     if(ptr + 2 > end) {
-                        warn("Unable to parse array, past the end");
                         goto end_parsing;
                     }
                     if(ptr[0] != '\x0D' || ptr[1] != '\x0A') {
@@ -87,7 +86,6 @@ PPCODE:
                         ++ptr;
                     }
                     if(ptr + 2 > end) {
-                        warn("Unable to parse push, past the end");
                         goto end_parsing;
                     }
                     if(ptr[0] != '\x0D' || ptr[1] != '\x0A') {
@@ -113,7 +111,6 @@ PPCODE:
                         ++ptr;
                     }
                     if(ptr + 2 > end) {
-                        warn("Unable to parse hash, past the end");
                         goto end_parsing;
                     }
                     /* Hash of key/value pairs */
@@ -141,7 +138,6 @@ PPCODE:
                         ++ptr;
                     }
                     if(ptr + 2 > end) {
-                        warn("Unable to parse integer, past the end");
                         goto end_parsing;
                     }
                     if(ptr[0] != '\x0D' || ptr[1] != '\x0A') {
@@ -162,7 +158,6 @@ PPCODE:
                     SV *v;
                     if(ptr[0] == '-' && ptr[1] == '1') {
                         if(ptr + 4 > end) {
-                            warn("Unable to parse undef string, past the end");
                             goto end_parsing;
                         }
                         // null
@@ -174,7 +169,6 @@ PPCODE:
                             ++ptr;
                         }
                         if(ptr + n + 4 > end) {
-                            warn("Unable to parse bulk string, past the end");
                             goto end_parsing;
                         }
                         if(ptr[0] != '\x0D' || ptr[1] != '\x0A') {
@@ -202,7 +196,6 @@ PPCODE:
                         ++ptr;
                     }
                     if(ptr + 2 > end) {
-                        warn("Unable to parse regular string, past the end");
                         goto end_parsing;
                     }
                     if(ptr[0] != '\x0D' || ptr[1] != '\x0A') {
@@ -225,7 +218,6 @@ PPCODE:
                         ++ptr;
                     }
                     if(ptr + 2 > end) {
-                        warn("Unable to parse error, past the end");
                         goto end_parsing;
                     }
                     if(ptr[0] != '\x0D' || ptr[1] != '\x0A') {
