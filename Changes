@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+
+0.004     2022-12-02 07:01:37+08:00 Asia/Singapore
     [New features]
     - support for RESP3 decimal (floating point) numbers (`,`)
     [Bugs fixed]
