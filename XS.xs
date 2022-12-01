@@ -50,7 +50,8 @@ PPCODE:
     if(*end != '\0') {
         croak("no trailing null?");
     }
-    if(len > 3 && *(end - 1) == '\x0A' && *(end - 2) == '\x0D') {
+
+    if(len >= 3 && *(end - 1) == '\x0A' && *(end - 2) == '\x0D') {
         while(*ptr && ptr < end) {
             switch(*ptr++) {
                 case '*': { /* array */
