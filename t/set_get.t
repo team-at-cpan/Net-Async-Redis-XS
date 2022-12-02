@@ -9,17 +9,18 @@ use Net::Async::Redis::XS;
 my $key = 'some-key';
 my $value = 'some-value';
 
-my $host = $ENV{REDIS_HOST};
-
-plan skip_all => 'Set REDIS_HOST to run this test' if not $host;
+my $host = $ENV{NET_ASYNC_REDIS_HOST}
+    or plan skip_all => 'Set NET_ASYNC_REDIS_HOST to run this test';
 
 my $loop = IO::Async::Loop->new;
-$loop->add(my $redis = Net::Async::Redis::XS->new);
-$redis->configure(host => $host);
+$loop->add(
+    my $redis = Net::Async::Redis::XS->new(
+        host => $host
+    )
+);
 await $redis->connect;
 await $redis->set($key, $value);
 my $result = await $redis->get($key);
-is $result, $value;
+is($result, $value);
 
-done_testing();
-
+done_testing;
