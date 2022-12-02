@@ -46,7 +46,7 @@ jobs:
       run: |
         cpanm --installdeps .
         cpanm Test::Fatal
-        cpanm Net:Async::Redis
+        cpanm Net::Async::Redis
 
     - name: Show Errors on Ubuntu
       if:  ${{ failure() && startsWith( matrix.runner, 'ubuntu-')}}
