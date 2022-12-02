@@ -14,7 +14,7 @@ my $host = $ENV{REDIS_HOST};
 plan skip_all => 'Set REDIS_HOST to run this test' if $host;
 
 my $loop = IO::Async::Loop->new;
-$loop->add(my $redis = Net::Async::Redis::XS);
+$loop->add(my $redis = Net::Async::Redis::XS->new);
 $redis->configure(host => $host);
 await $redis->connect;
 await $redis->set($key, $value);
