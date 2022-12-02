@@ -47,6 +47,7 @@ jobs:
         cpanm --installdeps .
         cpanm Test::Fatal
         cpanm Net::Async::Redis
+        cpanm Test::MemoryGrowth
 
     - name: Show Errors on Ubuntu
       if:  ${{ failure() && startsWith( matrix.runner, 'ubuntu-')}}
