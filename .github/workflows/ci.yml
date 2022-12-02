@@ -56,5 +56,8 @@ jobs:
         AUTHOR_TESTING: 1
         RELEASE_TESTING: 1
       run: |
-        dzil test
+        #dzil test
+        perl Makefile.PL
+        make
+        make test
 
