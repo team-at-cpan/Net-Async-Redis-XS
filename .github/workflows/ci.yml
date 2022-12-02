@@ -49,6 +49,7 @@ jobs:
       env:
         AUTHOR_TESTING: 1
         RELEASE_TESTING: 1
+        REDIS_HOST: redis
       run: |
         perl Makefile.PL
         make
