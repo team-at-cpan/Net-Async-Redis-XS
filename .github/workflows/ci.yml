@@ -12,9 +12,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        perl: [ '5.36' ]
-        #redis: ['6.0', '7.0', 'latest']
-        redis: ['latest']
+        perl: [ '5.30', '5.36' ]
+        redis: ['6.0', '7.0', 'latest']
+        #redis: ['latest']
 
     services:
       redis:
@@ -32,16 +32,6 @@ jobs:
       run: |
         perl -v
 
-    #- name: Install Dist::Zilla
-    #  run: |
-    #    cpanm -v
-    #    cpanm --notest Dist::Zilla
-
-    #- name: Install Modules
-    #  run: |
-    #    dzil authordeps --missing | cpanm --notest
-    #    dzil listdeps --develop --missing | cpanm --notest
-
     - name: Install Modules
       run: |
         cpanm --installdeps .
@@ -50,7 +40,7 @@ jobs:
         cpanm Test::MemoryGrowth
 
     - name: Show Errors on Ubuntu
-      if:  ${{ failure() && startsWith( matrix.runner, 'ubuntu-')}}
+      if:  ${{ failure() && matrix.runner == 'ubuntu-latest' }}
       run: |
          cat /home/runner/.cpanm/work/*/build.log
 
@@ -59,7 +49,6 @@ jobs:
         AUTHOR_TESTING: 1
         RELEASE_TESTING: 1
       run: |
-        #dzil test
         perl Makefile.PL
         make
         make test
