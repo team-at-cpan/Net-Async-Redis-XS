@@ -45,6 +45,7 @@ jobs:
     - name: Install Modules
       run: |
         cpanm --installdeps .
+        cpanm Test::Fatal
 
     - name: Show Errors on Ubuntu
       if:  ${{ failure() && startsWith( matrix.runner, 'ubuntu-')}}
