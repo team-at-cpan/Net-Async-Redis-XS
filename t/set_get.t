@@ -11,7 +11,7 @@ my $value = 'some-value';
 
 my $host = $ENV{REDIS_HOST};
 
-plan skip_all => 'Set REDIS_HOST to run this test' if $host;
+plan skip_all => 'Set REDIS_HOST to run this test' if not $host;
 
 my $loop = IO::Async::Loop->new;
 $loop->add(my $redis = Net::Async::Redis::XS->new);
