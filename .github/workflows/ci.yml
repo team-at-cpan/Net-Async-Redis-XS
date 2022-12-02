@@ -32,15 +32,19 @@ jobs:
       run: |
         perl -v
 
-    - name: Install Dist::Zilla
-      run: |
-        cpanm -v
-        cpanm --notest Dist::Zilla
+    #- name: Install Dist::Zilla
+    #  run: |
+    #    cpanm -v
+    #    cpanm --notest Dist::Zilla
+
+    #- name: Install Modules
+    #  run: |
+    #    dzil authordeps --missing | cpanm --notest
+    #    dzil listdeps --develop --missing | cpanm --notest
 
     - name: Install Modules
       run: |
-        dzil authordeps --missing | cpanm --notest
-        dzil listdeps --develop --missing | cpanm --notest
+        cpanm --installdeps .
 
     - name: Show Errors on Ubuntu
       if:  ${{ failure() && startsWith( matrix.runner, 'ubuntu-')}}
