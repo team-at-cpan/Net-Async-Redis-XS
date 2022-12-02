@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '42 5 * * *'
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        perl: [ '5.36' ]
+        #redis: ['6.0', '7.0', 'latest']
+        redis: ['latest']
+
+    services:
+      redis:
+        image: redis:${{matrix.redis}}
+
+    runs-on: ubuntu-latest
+    name: Perl ${{matrix.perl}} Redis ${{matrix.redis}}
+    container: perl:${{matrix.perl}}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+    - name: Show Perl Version
+      run: |
+        perl -v
+
+    - name: Install Dist::Zilla
+      run: |
+        cpanm -v
+        cpanm --notest Dist::Zilla
+
+    - name: Install Modules
+      run: |
+        dzil authordeps --missing | cpanm --notest
+        dzil listdeps --develop --missing | cpanm --notest
+
+    - name: Show Errors on Ubuntu
+      if:  ${{ failure() && startsWith( matrix.runner, 'ubuntu-')}}
+      run: |
+         cat /home/runner/.cpanm/work/*/build.log
+
+    - name: Run tests
+      env:
+        AUTHOR_TESTING: 1
+        RELEASE_TESTING: 1
+      run: |
+        dzil test
+
