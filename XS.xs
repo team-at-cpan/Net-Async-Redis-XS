@@ -4,6 +4,10 @@
 #include "XSUB.h"
 #include <math.h>
 
+/* Back-compatibility */
+#ifndef G_LIST
+#define G_LIST G_ARRAY
+#endif
 enum PendingStackType {
     array, map, set, attribute, push
 };
