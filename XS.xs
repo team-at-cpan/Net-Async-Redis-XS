@@ -59,13 +59,19 @@ PPCODE:
         croak("no trailing null?");
     }
 
-    if(len >= 3 && *(end - 1) == '\x0A' && *(end - 2) == '\x0D') {
+    /* The shortest command is a single-character null, which has the
+     * type `_` followed by CRLF terminator, so that's at least 3
+     * characters for a valid command.
+     */
+    if(len >= 3) { // && *(end - 1) == '\x0A' && *(end - 2) == '\x0D') {
         while(*ptr && ptr < end) {
+            /* First step is to check the data type and extract it if we can */
             switch(*ptr++) {
                 case '~': /* set */
                 case '*': { /* array */
                     int n = 0;
-                    while(*ptr >= '0' && *ptr <= '9' && ptr < end) {
+                    /* We effectively want grok_atoUV behaviour, but without having a full UV */
+                    while(*ptr >= '0' && *ptr <= '9') {
                         n = (n * 10) + (*ptr - '0');
                         ++ptr;
                     }
@@ -76,6 +82,7 @@ PPCODE:
                         croak("protocol violation - array length not followed by CRLF");
                     }
                     ptr += 2;
+
                     AV *x = (AV *) sv_2mortal((SV *)newAV());
                     if(n > 0) {
                         av_extend(x, n);
@@ -90,7 +97,7 @@ PPCODE:
                 }
                 case '>': { /* push (pubsub) */
                     int n = 0;
-                    while(*ptr >= '0' && *ptr <= '9' && ptr < end) {
+                    while(*ptr >= '0' && *ptr <= '9') {
                         n = (n * 10) + (*ptr - '0');
                         ++ptr;
                     }
@@ -101,6 +108,7 @@ PPCODE:
                         croak("protocol violation - push length not followed by CRLF");
                     }
                     ptr += 2;
+
                     AV *x = (AV *) sv_2mortal((SV *)newAV());
                     if(n > 0) {
                         av_extend(x, n);
@@ -115,13 +123,14 @@ PPCODE:
                 }
                 case '%': { /* hash */
                     int n = 0;
-                    while(*ptr >= '0' && *ptr <= '9' && ptr < end) {
+                    while(*ptr >= '0' && *ptr <= '9') {
                         n = (n * 10) + (*ptr - '0');
                         ++ptr;
                     }
                     if(ptr + 2 > end) {
                         goto end_parsing;
                     }
+
                     /* Hash of key/value pairs */
                     n = n * 2;
                     if(ptr[0] != '\x0D' || ptr[1] != '\x0A') {
@@ -352,6 +361,10 @@ PPCODE:
                     croak("Unknown type %d, bail out", ptr[-1]);
             }
 
+            /* Do some housekeeping after parsing: see if we've accumulated enough
+             * data to fill the requirements for one or more levels of our nested container
+             * handling.
+             */
             while(ps && av_count(ps->data) >= ps->expected) {
                 AV *data = ps->data;
                 struct pending_stack *orig = ps;
@@ -364,7 +377,7 @@ PPCODE:
                    );
                 } else {
                     switch(orig->type) {
-                    case push: {
+                    case push: { /* pub/sub is treated as an out-of-bound message */
                         SV *rv = SvRV(this);
                         if(hv_exists((HV *) rv, "pubsub", 6)) {
                             SV **cv_ptr = hv_fetchs((HV *) rv, "pubsub", 0);
@@ -388,10 +401,39 @@ PPCODE:
                         }
                         break;
                     }
-                    case attribute:
-                        warn("attribute received, but ignored");
+                    case attribute: {
+                        /* attributes aren't used much: for now, we emit as an event,
+                         * but eventually would aim to apply this to the response,
+                         * by returning a blessed object for example
+                         */
+                        SV *rv = SvRV(this);
+                        if(hv_exists((HV *) rv, "attribute", 9)) {
+                            SV **cv_ptr = hv_fetchs((HV *) rv, "attribute", 0);
+                            if(cv_ptr) {
+                                CV *cv = (CV *) *cv_ptr;
+                                dSP;
+                                ENTER;
+                                SAVETMPS;
+                                PUSHMARK(SP);
+                                EXTEND(SP, 1);
+                                PUSHs(sv_2mortal(value_ref));
+                                PUTBACK;
+                                call_sv((SV *) cv, G_VOID | G_DISCARD);
+                                FREETMPS;
+                                LEAVE;
+                            } else {
+                                warn("no CV for ->{attribute}");
+                            }
+                        } else {
+                            warn("no ->{attribute} handler");
+                        }
                         break;
+                    }
                     default:
+                        /* Yes, we fall through as a default for map and array: unless the
+                         * hashrefs option is set, we want to map all key/value pairs to plain
+                         * arrays anyway.
+                         */
                         av_push(
                             results,
                             value_ref
@@ -402,12 +444,18 @@ PPCODE:
                 }
                 Safefree(orig);
             }
+
+            /* Every time we reach the end of a complete item, we update
+             * our parsed string progress and add to our list of things to
+             * return.
+             */
             if(extracted_item) {
                 /* Remove anything we processed */
                 sv_chop(p, ptr);
                 ptr = SvPVbyte(p, len);
                 end = ptr + len;
                 extracted_item = 0;
+                /* ... and our "list" is only ever going to be a single item if we're in scalar context */
                 if (GIMME_V == G_SCALAR) {
                     extracted = av_shift(results);
                     break;
