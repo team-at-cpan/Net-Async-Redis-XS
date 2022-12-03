@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+    [Bugs fixed]
+    - memory leak when handling error responses
 
 0.005     2022-12-03 09:20:45+08:00 Asia/Singapore
     [New features]
