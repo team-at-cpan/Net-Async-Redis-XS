@@ -366,7 +366,7 @@ PPCODE:
                     switch(orig->type) {
                     case push: {
                         SV *rv = SvRV(this);
-                        if(hv_exists((HV *) rv, "pubsub", 5)) {
+                        if(hv_exists((HV *) rv, "pubsub", 6)) {
                             SV **cv_ptr = hv_fetchs((HV *) rv, "pubsub", 0);
                             if(cv_ptr) {
                                 CV *cv = (CV *) *cv_ptr;
