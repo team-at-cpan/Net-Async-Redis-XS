@@ -1,6 +1,16 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+    [New features]
+    - support for inf/nan as decimal (floating point) values
+    - support for verbatim strings (`=`)
+    - support for sets (`~`) and big numbers (`(`)
+    - this version may possibly work on versions of perl before 5.36.0
+    [Dependencies]
+    - previous `cpanfile` did not list dependencies, now resolved
+
+    Also enables CircleCI tests, thanks to some initial work from SZABGAB in prompting this:
+    https://dev.to/szabgab/day-2-add-github-action-ci-to-the-net-async-redis-xs-perl-module-9oo
 
 0.004     2022-12-02 07:01:37+08:00 Asia/Singapore
     [New features]

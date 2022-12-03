@@ -8,9 +8,12 @@
 #ifndef G_LIST
 #define G_LIST G_ARRAY
 #endif
+
+/* Types of data structures that can nest */
 enum PendingStackType {
     array, map, set, attribute, push
 };
+/* Container representation - basic stack of nested lists */
 struct pending_stack {
     AV *data;
     struct pending_stack *prev;
@@ -59,6 +62,7 @@ PPCODE:
     if(len >= 3 && *(end - 1) == '\x0A' && *(end - 2) == '\x0D') {
         while(*ptr && ptr < end) {
             switch(*ptr++) {
+                case '~': /* set */
                 case '*': { /* array */
                     int n = 0;
                     while(*ptr >= '0' && *ptr <= '9' && ptr < end) {
@@ -173,21 +177,29 @@ PPCODE:
                         negative = 1;
                         ++ptr;
                     }
-                    int fraction = 0;
-                    int digits = 0;
-                    while((*ptr == '.' || (*ptr >= '0' && *ptr <= '9')) && ptr < end) {
-                        if(*ptr == '.') {
-                            fraction = 1;
-                        } else {
-                            n = (n * 10) + (*ptr - '0');
-                            if(fraction) {
-                                ++digits;
-                            }
+                    if(*ptr == 'i' || *ptr == 'n') {
+                        if(!strncmp(ptr, "inf", 3)) {
+                            n = NV_INF;
+                        } else if(!strncmp(ptr, "nan", 3)) {
+                            n = NV_NAN;
                         }
-                        ++ptr;
-                    }
-                    if(digits > 0) {
-                        n = n / pow(10, digits);
+                    } else {
+                        int fraction = 0;
+                        int digits = 0;
+                        while((*ptr == '.' || (*ptr >= '0' && *ptr <= '9')) && ptr < end) {
+                            if(*ptr == '.') {
+                                fraction = 1;
+                            } else {
+                                n = (n * 10) + (*ptr - '0');
+                                if(fraction) {
+                                    ++digits;
+                                }
+                            }
+                            ++ptr;
+                        }
+                        if(digits > 0) {
+                            n = n / pow(10, digits);
+                        }
                     }
                     if(negative) {
                         n = -n;
@@ -208,6 +220,7 @@ PPCODE:
                     }
                     break;
                 }
+                case '=': /* verbatim string - fall through */
                 case '$': { /* bulk string */
                     int n = 0;
                     SV *v;
@@ -245,6 +258,7 @@ PPCODE:
                     }
                     break;
                 }
+                case '(': /* big number - treat as a string for now */
                 case '+': { /* string */
                     const char *start = ptr;
                     while(*ptr && (ptr[0] != '\x0D' && ptr[1] != '\x0A' && ptr < end)) {
@@ -323,7 +337,7 @@ PPCODE:
                         goto end_parsing;
                     }
                     if(ptr[0] != '\x0D' || ptr[1] != '\x0A') {
-                        croak("protocol violation");
+                        croak("protocol violation - single-character null not followed by CRLF");
                     }
                     ptr += 2;
                     if(ps) {
