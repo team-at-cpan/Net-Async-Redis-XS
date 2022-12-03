@@ -54,7 +54,7 @@ PPCODE:
     AV *results = (AV *) sv_2mortal((SV *) newAV());
     int extracted_item = 0;
     SV *extracted = &PL_sv_undef;
-    /* Shortcut for "we have incomplete data" */
+    /* Perl strings _should_ guarantee this, so perhaps better as an assert? */
     if(*end != '\0') {
         croak("no trailing null?");
     }
@@ -302,11 +302,8 @@ PPCODE:
                         croak("protocol violation - error not terminated by CRLF");
                     }
                     int n = ptr - start;
-                    char *str = Newx(str, n + 1, char);
-                    strncpy(str, start, n);
-                    str[n] = '\0';
+                    SV *v = newSVpvn(start, n);
                     ptr += 2;
-                    SV *v = newSVpvn(str, n);
                     SV *rv = SvRV(this);
 
                     /* Remove anything we processed - we're doing this _before_ the call,
