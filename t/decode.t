@@ -5,7 +5,10 @@ use Test::More;
 use Test::Fatal;
 use Net::Async::Redis::XS;
 
-my $instance = Net::Async::Redis::Protocol::XS->new;
+my $instance = Net::Async::Redis::Protocol::XS->new(
+    error  => sub { note 'error callback: ' . shift },
+    pubsub => sub { note 'pubsub callback: ' . shift },
+);
 
 ++$|;
 like(exception {
@@ -55,7 +58,12 @@ is_deeply(
     'can decode_buffer'
 );
 
-is_deeply([ Net::Async::Redis::XS::decode_buffer($instance, ">1$Z:8$Z") ], [ ], 'can decode_buffer for pubsub with no data');
+{
+    my $pubsub;
+    local $instance->{pubsub} = sub { fail('called more than once') if $pubsub; $pubsub = shift; };
+    is_deeply([ Net::Async::Redis::XS::decode_buffer($instance, ">1$Z:8$Z") ], [ ], 'can decode_buffer for pubsub with no data');
+    is_deeply($pubsub, [ 8 ]);
+}
 
 is_deeply(
     Net::Async::Redis::XS::decode_buffer($instance,
