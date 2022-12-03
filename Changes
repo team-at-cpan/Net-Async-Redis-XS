@@ -6,6 +6,8 @@ Revision history for {{$dist->name}}
     - support for verbatim strings (`=`)
     - support for sets (`~`) and big numbers (`(`)
     - this version may possibly work on versions of perl before 5.36.0
+    [Bugs fixed]
+    - pubsub handling fixes - was not picking up the callback correctly before
     [Dependencies]
     - previous `cpanfile` did not list dependencies, now resolved
 

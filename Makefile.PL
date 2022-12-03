@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use 5.036;
+use 5.032;
 
 use ExtUtils::MakeMaker;
 
@@ -14,7 +14,7 @@ my %WriteMakefileArgs = (
   },
   "DISTNAME" => "Net-Async-Redis-XS",
   "LICENSE" => "perl",
-  "MIN_PERL_VERSION" => "5.036",
+  "MIN_PERL_VERSION" => "5.032",
   "NAME" => "Net::Async::Redis::XS",
   "PREREQ_PM" => {
     "Future::AsyncAwait" => "0.61",
@@ -33,7 +33,7 @@ my %WriteMakefileArgs = (
     "Test::MemoryGrowth" => 0,
     "Test::More" => "0.98"
   },
-  "VERSION" => "0.004",
+  "VERSION" => "0.005",
   "test" => {
     "TESTS" => "t/*.t"
   }
