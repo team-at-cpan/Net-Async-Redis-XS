@@ -41,7 +41,7 @@ AV *
 decode_buffer(SV *this, SV *p)
 PPCODE:
     /* Plain bytestring required: no magic, no UTF-8, no nonsense */
-    if(SvTYPE(p) != SVt_PV)
+    if(!SvPOK(p))
         croak("expected a string");
     if(SvUTF8(p))
         sv_utf8_downgrade(p, true);
