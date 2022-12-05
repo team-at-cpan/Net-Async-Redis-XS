@@ -187,9 +187,9 @@ PPCODE:
                         ++ptr;
                     }
                     if(*ptr == 'i' || *ptr == 'n') {
-                        if(!strncmp(ptr, "inf", 3)) {
+                        if(strnEQ(ptr, "inf", 3)) {
                             n = NV_INF;
-                        } else if(!strncmp(ptr, "nan", 3)) {
+                        } else if(strnEQ(ptr, "nan", 3)) {
                             n = NV_NAN;
                         }
                     } else {
