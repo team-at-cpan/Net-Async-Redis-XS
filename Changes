@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+
+0.007     2022-12-06 11:37:59+08:00 Asia/Singapore
     [Bugs fixed]
     - decimal (floating point) value conversion upgraded from `float` to `double`,
     and switched to Perl number-parsing routine for better accuracy (technically
