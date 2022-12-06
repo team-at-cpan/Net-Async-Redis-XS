@@ -1,6 +1,13 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+    [Bugs fixed]
+    - decimal (floating point) value conversion upgraded from `float` to `double`,
+    and switched to Perl number-parsing routine for better accuracy (technically
+    allows slightly more than the official protocol, but better than rolling our own)
+
+    [Refactoring]
+    - applied some improvements as suggested by PEVANS (thanks!)
 
 0.006     2022-12-03 19:28:42+08:00 Asia/Singapore
     [Bugs fixed]
