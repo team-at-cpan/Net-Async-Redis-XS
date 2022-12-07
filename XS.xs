@@ -88,10 +88,12 @@ PPCODE:
                         av_extend(x, n);
                     }
                     struct pending_stack *pn = Newx(pn, 1, struct pending_stack);
-                    pn->data = x;
-                    pn->prev = ps;
-                    pn->expected = n;
-                    pn->type = array;
+                    *pn = (struct pending_stack) {
+                        .data = x,
+                        .prev = ps,
+                        .expected = n,
+                        .type = array
+                    };
                     ps = pn;
                     break;
                 }
@@ -114,10 +116,12 @@ PPCODE:
                         av_extend(x, n);
                     }
                     struct pending_stack *pn = Newx(pn, 1, struct pending_stack);
-                    pn->data = x;
-                    pn->prev = ps;
-                    pn->expected = n;
-                    pn->type = push;
+                    *pn = (struct pending_stack) {
+                        .data = x,
+                        .prev = ps,
+                        .expected = n,
+                        .type = push
+                    };
                     ps = pn;
                     break;
                 }
@@ -142,10 +146,12 @@ PPCODE:
                         av_extend(x, n);
                     }
                     struct pending_stack *pn = Newx(pn, 1, struct pending_stack);
-                    pn->data = x;
-                    pn->prev = ps;
-                    pn->expected = n;
-                    pn->type = map;
+                    *pn = (struct pending_stack) {
+                        .data = x,
+                        .prev = ps,
+                        .expected = n,
+                        .type = map
+                    };
                     ps = pn;
                     break;
                 }
