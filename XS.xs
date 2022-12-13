@@ -344,8 +344,8 @@ PPCODE:
                 AV *data = ps->data;
                 struct pending_stack *orig = ps;
                 ps = orig->prev;
-                SV *value_ref = newRV((SV *) data);
                 if(ps) {
+                    SV *value_ref = newRV((SV *) data);
                     av_push(
                         ps->data,
                         value_ref
@@ -362,8 +362,13 @@ PPCODE:
                                 ENTER;
                                 SAVETMPS;
                                 PUSHMARK(SP);
-                                EXTEND(SP, 1);
-                                PUSHs(sv_2mortal(value_ref));
+                                long count = av_count(data);
+                                if(count) {
+                                    EXTEND(SP, count);
+                                    for(int i = 0; i < count; ++i) {
+                                        mPUSHs(av_shift(data));
+                                    }
+                                }
                                 PUTBACK;
                                 call_sv((SV *) cv, G_VOID | G_DISCARD);
                                 FREETMPS;
@@ -382,6 +387,7 @@ PPCODE:
                          * by returning a blessed object for example
                          */
                         SV *rv = SvRV(this);
+                        SV *value_ref = newRV((SV *) data);
                         if(hv_exists((HV *) rv, "attribute", 9)) {
                             SV **cv_ptr = hv_fetchs((HV *) rv, "attribute", 0);
                             if(cv_ptr) {
@@ -404,17 +410,19 @@ PPCODE:
                         }
                         break;
                     }
-                    default:
+                    default: {
                         /* Yes, we fall through as a default for map and array: unless the
                          * hashrefs option is set, we want to map all key/value pairs to plain
                          * arrays anyway.
                          */
+                        SV *value_ref = newRV((SV *) data);
                         av_push(
                             results,
                             value_ref
                         );
                         extracted_item = 1;
                         break;
+                    }
                     }
                 }
                 Safefree(orig);

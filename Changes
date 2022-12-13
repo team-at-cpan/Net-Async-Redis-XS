@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+    [Bugs fixed]
+    - pubsub callback takes a list, not an arrayref
 
 0.007     2022-12-06 11:37:59+08:00 Asia/Singapore
     [Bugs fixed]
