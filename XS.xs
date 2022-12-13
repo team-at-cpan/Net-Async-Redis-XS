@@ -52,7 +52,7 @@ PPCODE:
     const char *end = in + len;
     struct pending_stack *ps = NULL;
     AV *results = (AV *) sv_2mortal((SV *) newAV());
-    int extracted_item = 0;
+    bool extracted_item = false;
     SV *extracted = &PL_sv_undef;
     /* Perl strings _should_ guarantee this, so perhaps better as an assert? */
     if(*end != '\0') {
@@ -181,7 +181,7 @@ PPCODE:
                         add_value(ps, v);
                     } else {
                         av_push(results, v);
-                        extracted_item = 1;
+                        extracted_item = true;
                     }
                     break;
                 }
@@ -203,7 +203,7 @@ PPCODE:
                         add_value(ps, v);
                     } else {
                         av_push(results, v);
-                        extracted_item = 1;
+                        extracted_item = true;
                     }
                     break;
                 }
@@ -241,7 +241,7 @@ PPCODE:
                         add_value(ps, v);
                     } else {
                         av_push(results, v);
-                        extracted_item = 1;
+                        extracted_item = true;
                     }
                     break;
                 }
@@ -264,7 +264,7 @@ PPCODE:
                         add_value(ps, v);
                     } else {
                         av_push(results, v);
-                        extracted_item = 1;
+                        extracted_item = true;
                     }
                     break;
                 }
@@ -328,7 +328,7 @@ PPCODE:
                         add_value(ps, v);
                     } else {
                         av_push(results, v);
-                        extracted_item = 1;
+                        extracted_item = true;
                     }
                     break;
                 }
@@ -423,7 +423,7 @@ PPCODE:
                         break;
                     }
                     }
-                    extracted_item = 1;
+                    extracted_item = true;
                 }
                 Safefree(orig);
             }
@@ -437,7 +437,7 @@ PPCODE:
                 sv_chop(p, ptr);
                 ptr = SvPVbyte(p, len);
                 end = ptr + len;
-                extracted_item = 0;
+                extracted_item = false;
                 /* ... and our "list" is only ever going to be a single item if we're in scalar context */
                 if (GIMME_V == G_SCALAR && av_count(results) > 0) {
                     extracted = av_shift(results);
