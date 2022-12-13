@@ -420,10 +420,10 @@ PPCODE:
                             results,
                             value_ref
                         );
-                        extracted_item = 1;
                         break;
                     }
                     }
+                    extracted_item = 1;
                 }
                 Safefree(orig);
             }
@@ -439,7 +439,7 @@ PPCODE:
                 end = ptr + len;
                 extracted_item = 0;
                 /* ... and our "list" is only ever going to be a single item if we're in scalar context */
-                if (GIMME_V == G_SCALAR) {
+                if (GIMME_V == G_SCALAR && av_count(results) > 0) {
                     extracted = av_shift(results);
                     break;
                 }
