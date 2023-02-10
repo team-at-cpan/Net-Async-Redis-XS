@@ -31,4 +31,4 @@ with contributions from `PEVANS@cpan.org`.
 
 # LICENSE
 
-Copyright Tom Molesworth 2022. Licensed under the same terms as Perl itself.
+Copyright Tom Molesworth 2022-2023. Licensed under the same terms as Perl itself.
