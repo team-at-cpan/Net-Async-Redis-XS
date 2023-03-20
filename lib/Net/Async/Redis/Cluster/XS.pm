@@ -19,6 +19,7 @@ API and behaviour should be identical to L<Net::Async::Redis::Cluster>, see ther
 
 =cut
 
+use Syntax::Keyword::Try;
 use Net::Async::Redis::XS;
 use Future::AsyncAwait;
 
