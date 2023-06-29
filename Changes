@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+
+0.011     2023-06-29 12:21:07+08:00 Asia/Singapore
     [Bugs fixed]
     - Net::Async::Redis::Cluster::XS `->bootstrap` needs to load Syntax::Keyword::Try
     - Ensure all nodes in the cluster are using the ::XS version, some requests were
