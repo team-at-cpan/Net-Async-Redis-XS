@@ -1,6 +1,10 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+    [Bugs fixed]
+
+    - node config was not being passed in bootstrap, potentially leading to inconsistent
+    results compared to other discovered nodes
 
 0.011     2023-06-29 12:21:07+08:00 Asia/Singapore
     [Bugs fixed]
