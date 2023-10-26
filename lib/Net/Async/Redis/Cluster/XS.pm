@@ -3,7 +3,7 @@ package Net::Async::Redis::Cluster::XS;
 use strict;
 use warnings;
 
-our $VERSION = '0.013'; # VERSION
+our $VERSION = '0.014'; # VERSION
 
 use parent qw(Net::Async::Redis::Cluster);
 
