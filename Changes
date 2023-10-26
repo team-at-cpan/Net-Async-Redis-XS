@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+
+0.013     2023-10-26 11:42:25+08:00 Asia/Singapore
     [New features]
 
     - now sends host and port as fallback for single-node cluster connection
