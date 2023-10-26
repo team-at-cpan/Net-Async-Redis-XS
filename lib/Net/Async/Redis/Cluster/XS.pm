@@ -36,7 +36,11 @@ async sub bootstrap {
             )
         );
         await $redis->connect;
-        await $self->apply_slots_from_instance($redis);
+        await $self->apply_slots_from_instance(
+            $redis,
+            host => $args{host},
+            port => $args{port}
+        );
     } finally {
         $redis->remove_from_parent if $redis;
     }
