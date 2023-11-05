@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+
+1.000     2023-11-05 22:24:15+08:00 Asia/Singapore
     [Refactoring]
 
     - switch to Object::Pad, to match main Net::Async::Redis distribution

@@ -32,9 +32,10 @@ my %WriteMakefileArgs = (
     "Test::Fatal" => "0.016",
     "Test::HexString" => 0,
     "Test::MemoryGrowth" => 0,
+    "Test::MockModule" => 0,
     "Test::More" => "0.98"
   },
-  "VERSION" => "0.014",
+  "VERSION" => "1.000",
   "test" => {
     "TESTS" => "t/*.t"
   }
@@ -55,6 +56,7 @@ my %FallbackPrereqs = (
   "Test::Fatal" => "0.016",
   "Test::HexString" => 0,
   "Test::MemoryGrowth" => 0,
+  "Test::MockModule" => 0,
   "Test::More" => "0.98"
 );
 
