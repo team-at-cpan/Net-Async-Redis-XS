@@ -1,11 +1,12 @@
 package Net::Async::Redis::Cluster::XS;
 
+use Object::Pad;
+class Net::Async::Redis::Cluster::XS :isa(Net::Async::Redis::Cluster);
+
 use strict;
 use warnings;
 
 # VERSION
-
-use parent qw(Net::Async::Redis::Cluster);
 
 =head1 NAME
 
@@ -24,8 +25,7 @@ use Net::Async::Redis::XS;
 use Net::Async::Redis::Cluster::Node::XS;
 use Future::AsyncAwait;
 
-async sub bootstrap {
-    my ($self, %args) = @_;
+async method bootstrap (%args) {
     my $redis;
     try {
         $self->add_child(
@@ -46,8 +46,7 @@ async sub bootstrap {
     }
 }
 
-sub instantiate_node {
-    my ($self, $slot_data) = @_;
+method instantiate_node ($slot_data) {
     return Net::Async::Redis::Cluster::Node::XS->from_arrayref(
         $slot_data,
         cluster => $self,
