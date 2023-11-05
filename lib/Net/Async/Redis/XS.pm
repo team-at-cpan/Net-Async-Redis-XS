@@ -7,7 +7,7 @@ class Net::Async::Redis::XS :isa(Net::Async::Redis);
 use strict;
 use warnings;
 
-our $VERSION = '0.014';
+our $VERSION = '1.000';
 
 =head1 NAME
 

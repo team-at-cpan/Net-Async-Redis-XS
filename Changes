@@ -1,6 +1,9 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+    [Refactoring]
+
+    - switch to Object::Pad, to match main Net::Async::Redis distribution
 
 0.014     2023-10-26 23:05:58+08:00 Asia/Singapore
     [Bugs fixed]
