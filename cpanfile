@@ -10,4 +10,5 @@ on 'test' => sub {
     requires 'Test::HexString', 0;
     requires 'Test::Deep', 0;
     requires 'Test::MemoryGrowth', 0;
+    requires 'Test::MockModule', 0;
 };
