@@ -1,6 +1,9 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+    [Bugs fixed]
+
+    - fix compilation on threaded Perls, thanks to Cellisti for reporting
 
 1.000     2023-11-05 22:24:15+08:00 Asia/Singapore
     [Refactoring]
