@@ -27,8 +27,8 @@ API and behaviour should be identical to [Net::Async::Redis](https://metacpan.or
 
 Tom Molesworth <TEAM@cpan.org>
 
-with contributions from `PEVANS@cpan.org`.
+with contributions from `PEVANS@cpan.org` and `Cellisti`.
 
 # LICENSE
 
-Copyright Tom Molesworth 2022-2023. Licensed under the same terms as Perl itself.
+Copyright Tom Molesworth 2022-2024. Licensed under the same terms as Perl itself.
